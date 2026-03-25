@@ -44,28 +44,100 @@ public class RekamMedisManager {
     // TODO LENGKAPILAH SETIAP METHOD YANG KOSONG DIBAWAH INI
     // --- 1. CREATE (Tambah Rekam Medis) ---
     public boolean tambahRekamMedis(String namaDokter,String namaPasien, String diagnosis, String tanggal) {
-        return false;
+        String query = "INSERT INTO rekam_medis (nama_dokter, nama_pasien, diagnosis, tanggal) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, namaDokter);
+            stmt.setString(2, namaPasien);
+            stmt.setString(3, diagnosis);
+            stmt.setString(4, tanggal);
+
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            System.err.println("Error saat menambah rekam medis: " + e.getMessage());
+
+            return false;
+        }
     }
 
     // --- 2. READ ALL ---
     public List<RekamMedis> getAllRekamMedis() {
         List<RekamMedis> rekamMedisList = new ArrayList<>();
-        return rekamMedisList;
+            String query = "SELECT * FROM rekam_medis";
+
+            try (PreparedStatement stmt = connection.prepareStatement(query);
+                 ResultSet rs = stmt.executeQuery()) {
+
+                while (rs.next()) {
+                    int id = rs.getInt("id");
+                    String namaPasien = rs.getString("nama_pasien");
+                    String diagnosis = rs.getString("diagnosis");
+                    String tanggal = rs.getString("tanggal");
+                    String namaDokter = rs.getString("nama_dokter");
+
+                    // Menambahkan data dari database ke dalam List
+                    rekamMedisList.add(new RekamMedis(id, namaPasien, diagnosis, tanggal, namaDokter));
+                }
+            } catch (SQLException e) {
+                System.err.println("Error saat mengambil semua rekam medis: " + e.getMessage());
+            }
+            return rekamMedisList;
     }
 
     // --- 3. UPDATE ---
     public boolean editRekamMedis(int idRekamMedis, String diagnosisBaru) {
+            String query = "UPDATE rekam_medis SET diagnosis = ? WHERE id = ?";
+
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setString(1, diagnosisBaru);
+                stmt.setInt(2, idRekamMedis);
+
+                int rowsAffected = stmt.executeUpdate();
+                return rowsAffected > 0;
+            } catch (SQLException e) {
+                System.err.println("Error saat mengubah rekam medis: " + e.getMessage());
+
+            }
         return false;
     }
 
     // --- 4. DELETE ---
     public boolean hapusRekamMedis(int idRekamMedis) {
-        return false;
+        String query = "DELETE FROM rekam_medis WHERE id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idRekamMedis);
+
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            System.err.println("Error saat menghapus rekam medis: " + e.getMessage());
+
+            return false;
+        }
     }
 
-    // --- 5. READ ---
-    public List<RekamMedis> cariRekamMedisPasien(String nama) {
-        List<RekamMedis> resultList = new ArrayList<>();
-        return resultList;
+        // --- 5. READ ---
+        public List<RekamMedis> cariRekamMedisPasien (String nama){
+            List<RekamMedis> resultList = new ArrayList<>();
+            String query = "SELECT * FROM rekam_medis WHERE nama_pasien LIKE ?";
+
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setString(1, "%" + nama + "%");
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        int id = rs.getInt("id");
+                        String namaPasien = rs.getString("nama_pasien");
+                        String diagnosis = rs.getString("diagnosis");
+                        String tanggal = rs.getString("tanggal");
+                        String namaDokter = rs.getString("nama_dokter");
+
+                        resultList.add(new RekamMedis(id, namaPasien, diagnosis, tanggal, namaDokter));
+                    }
+                }
+            } catch (SQLException e) {
+                System.err.println("Error saat mencari rekam medis pasien: " + e.getMessage());
+            }
+            return resultList;
+        }
     }
-}
